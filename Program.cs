@@ -9,6 +9,15 @@ namespace BGTollChecker
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddHttpClient<BGTollChecker.Services.IBGTollService,
+                BGTollChecker.Services.BGTollService>(client =>
+                {
+                    //client.BaseAddress = new Uri("https://api.bgtoll.bg/");
+                    client.BaseAddress = new Uri("https://check.bgtoll.bg/");
+                    client.Timeout = TimeSpan.FromSeconds(30);
+
+                    client.DefaultRequestHeaders.Accept.ParseAdd("application/json, text/plain, */*");
+                });
 
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");

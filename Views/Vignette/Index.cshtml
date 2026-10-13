@@ -1,0 +1,126 @@
+﻿@model BGTollChecker.Models.VignetteCheckViewModel
+
+@{
+    ViewData["Title"] = "Проверка на винетка";
+}
+
+<div class="container mt-5" style="max-width: 750px;">
+    <h1 class="mb-2">Проверка на винетка</h1>
+    <p class="text-muted">
+        Провери валидността на винетка чрез BGToll.
+    </p>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form asp-controller="Vignette"
+                  asp-action="Index"
+                  method="post">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="CountryCode"
+                           class="form-label"></label>
+
+                    <select asp-for="CountryCode"
+                            class="form-select">
+                        <option value="BG">България (BG)</option>
+                        <option value="RO">Румъния (RO)</option>
+                        <option value="GR">Гърция (GR)</option>
+                        <option value="DE">Германия (DE)</option>
+                        <option value="TR">Турция (TR)</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="RegistrationNumber"
+                           class="form-label"></label>
+
+                    <input asp-for="RegistrationNumber"
+                           class="form-control"
+                           placeholder="Например A9999HX" />
+
+                    <span asp-validation-for="RegistrationNumber"
+                          class="text-danger"></span>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary w-100">
+                    Провери винетка
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">
+            @Model.ErrorMessage
+        </div>
+    }
+
+    @if (Model.Result?.Vignettes is { Count: > 0 })
+    {
+        @foreach (var vignette in Model.Result.Vignettes)
+        {
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex
+                    justify-content-between align-items-center">
+                    <strong>Резултат от проверката</strong>
+
+                    <span class="badge @(vignette.StatusBoolean
+                          ? "bg-success" : "bg-danger")">
+                        @vignette.Status
+                    </span>
+                </div>
+
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        @vignette.LicensePlateNumber
+                    </h5>
+
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Държава</dt>
+                        <dd class="col-sm-7">@vignette.Country</dd>
+
+                        <dt class="col-sm-5">Номер на винетка</dt>
+                        <dd class="col-sm-7">@vignette.VignetteNumber</dd>
+
+                        <dt class="col-sm-5">Валидна от</dt>
+                        <dd class="col-sm-7">
+                            @vignette.ValidityDateFromFormated
+                        </dd>
+
+                        <dt class="col-sm-5">Валидна до</dt>
+                        <dd class="col-sm-7">
+                            @vignette.ValidityDateToFormated
+                        </dd>
+
+                        <dt class="col-sm-5">Цена</dt>
+                        <dd class="col-sm-7">
+                            @vignette.Price.ToString("F2")
+                            @vignette.Currency
+                        </dd>
+
+                        <dt class="col-sm-5">Превозно средство</dt>
+                        <dd class="col-sm-7">@vignette.VehicleType</dd>
+
+                        <dt class="col-sm-5">Екологичен клас</dt>
+                        @(vignette.EmissionsClass ?? "Няма данни")
+                    </dl>
+                </div>
+            </div>
+        }
+    }
+    else if (Model.Result is not null)
+    {
+        <div class="alert alert-info">
+            Няма намерена информация за винетка.
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
